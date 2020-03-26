@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 /// SMS Information class
 /// </summary>
 /// <remarks>
-/// Source : https://github.com/troll31/sms-counter-csharp (inspired by the Javascript library https://github.com/danxexe/sms-counter )
+/// Inspired by the Javascript library https://github.com/danxexe/sms-counter
 /// @author: troll31
 /// @date: 26th March, 2020
 /// 
@@ -100,23 +100,23 @@ public class SmsCounter
 	/// <summary>
 	/// Encoding used
 	/// </summary>
-	public EncodingEnum Encoding { get; set; }
+	public EncodingEnum Encoding { get; private set; } = EncodingEnum.GSM_7BIT;
 	/// <summary>
 	/// Number of chars
 	/// </summary>
-	public Int32 Length { get; set; }
+	public Int32 Length { get; private set; } = 0;
 	/// <summary>
 	/// Number of messages
 	/// </summary>
-	public Int32 Messages { get; set; }
+	public Int32 Messages { get; private set; } = 1;
 	/// <summary>
 	/// Number of char per message
 	/// </summary>
-	public Int32 PerMessage { get; set; }
+	public Int32 PerMessage { get; private set; } = 160;
 	/// <summary>
 	/// Number of char remaining in current message
 	/// </summary>
-	public Int32 Remaining { get; set; }
+	public Int32 Remaining { get; private set; } = 160;
 
 	#endregion
 
@@ -125,8 +125,28 @@ public class SmsCounter
 	/// <summary>
 	/// SMS Counter
 	/// </summary>
+	public SmsCounter()
+	{
+	}
+
+	/// <summary>
+	/// SMS Counter
+	/// </summary>
 	/// <param name="text">SMS text</param>
 	public SmsCounter(String text)
+	{
+		this.Count(text);
+	}
+
+	#endregion
+
+	#region Methods
+
+	/// <summary>
+	/// Count SMS Message
+	/// </summary>
+	/// <param name="text">SMS text</param>
+	public void Count(String text)
 	{
 		this.Encoding = SmsCounter.GetEncoding(text);
 		this.Length = text.Length;
@@ -136,15 +156,15 @@ public class SmsCounter
 			this.Length += SmsCounter.ExtractExtendedGsm7bitChars(text).Count;
 		}
 
-		if (SmsCounter.MaxCharsInSimpleSms.TryGetValue(this.Encoding, out Int32 iPerMessage))
+		if (SmsCounter.MaxCharsInSimpleSms.TryGetValue(this.Encoding, out Int32 iMaxCharsInSimpleSms))
 		{
-			if (this.Length > iPerMessage && SmsCounter.MaxCharsInMultiSms.TryGetValue(this.Encoding, out Int32 iPerMultiMessage))
+			if (this.Length > iMaxCharsInSimpleSms && SmsCounter.MaxCharsInMultiSms.TryGetValue(this.Encoding, out Int32 iMaxCharsInMultiSms))
 			{
-				this.PerMessage = iPerMultiMessage;
+				this.PerMessage = iMaxCharsInMultiSms;
 			}
 			else
 			{
-				this.PerMessage = iPerMessage;
+				this.PerMessage = iMaxCharsInSimpleSms;
 			}
 			this.Messages = (Int32)Math.Ceiling((Decimal)this.Length / this.PerMessage);
 			this.Remaining = (this.PerMessage * this.Messages) - this.Length;
