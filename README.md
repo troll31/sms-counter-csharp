@@ -2,7 +2,7 @@
 
 Character counter for SMS messages.
 
-Original inspiration : danxexe/sms-counter
+Original inspiration : [danxexe/sms-counter](https://github.com/danxexe/sms-counter)
 
 ## Usage
 
