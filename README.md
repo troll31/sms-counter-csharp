@@ -7,17 +7,17 @@ Original inspiration : [danxexe/sms-counter](https://github.com/danxexe/sms-coun
 ## Usage
 
 ```csharp
-var oInfos = new SmsCounter('content of the SMS');
+var oInfos = new SmsCounter("content of the SMS");
 ```
 
-You will have access to the following object:
+You will have access to the following informations :
 
 ```csharp
-oInfos.Encoding = EncodingEnum.GSM_7BIT;
-oInfos.Length = 18:
-oInfos.Messages = 1:
-oInfos.PerMessage = 160:
-oInfos.Remaining = 142:
+oInfos.Messages 	// Number of messages (Int32) = 1
+oInfos.Length   	// Total length of messages (Int32) = 18
+oInfos.Remaining 	// Remaining chars in the message (Int32) = 142
+oInfos.PerMessage 	// Max chars in 1 message (Int32) = 160
+oInfos.Encoding 	// Encoding used by messages (EncodingEnum) = GSM_7BIT
 ```
 
 ## ToDo
