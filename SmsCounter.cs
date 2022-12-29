@@ -34,209 +34,213 @@ using System.Text.RegularExpressions;
 /// THE SOFTWARE.
 /// -------------------------------------------------------------------------------
 /// </remarks>
+
 public class SmsCounter
 {
-	#region Constant
+    #region Constant
 
-	/// <summary>
-	/// GSM 7 bit charset
-	/// </summary>
-	public const String GSM_7BIT_CHARSET = "@£$¥èéùìòÇ\\nØø\\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\\\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà";
-	/// <summary>
-	/// GSM 7 bit Extended charset
-	/// </summary>
-	public const String GSM_7BIT_EX_CHARSET = "\\^{}\\\\\\[~\\]|€";
+    /// <summary>
+    /// GSM 7 bit charset
+    /// </summary>
+    private const string GSM_7BIT_charSET = "@£$¥èéùìòÇ\\nØø\\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\\\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà";
+    /// <summary>
+    /// GSM 7 bit Extended charset
+    /// </summary>
+    private const string GSM_7BIT_EX_charSET = "\\^{}\\\\\\[~\\]|€";
 
-	#endregion
+    #endregion
 
-	#region Enumerations
+    #region Enumerations
 
-	/// <summary>
-	/// Sms Encodings
-	/// </summary>
-	public enum EncodingEnum
-	{
-		/// <summary>
-		/// GSM 7 bit (GSM 03.38)
-		/// </summary>
-		GSM_7BIT,
-		/// <summary>
-		/// GSM 7 bit Extended (GSM 03.38 Extension)
-		/// </summary>
-		GSM_7BIT_EX3,
-		/// <summary>
-		/// Unicode (UCS-2)
-		/// </summary>
-		UNICODE,
-	}
+    /// <summary>
+    /// Sms Encodings
+    /// </summary>
+    public enum EncodingEnum
+    {
+        /// <summary>
+        /// GSM 7 bit (GSM 03.38)
+        /// </summary>
+        GSM_7BIT,
+        /// <summary>
+        /// GSM 7 bit Extended (GSM 03.38 Extension)
+        /// </summary>
+        GSM_7BIT_EX3,
+        /// <summary>
+        /// Unicode (UCS-2)
+        /// </summary>
+        UNICODE,
+    }
 
-	#endregion
+    #endregion
 
-	#region Dictionary
+    #region Dictionary
 
-	/// <summary>
-	/// Message length by charset
-	/// </summary>
-	private static Dictionary<EncodingEnum, Int32> MaxCharsInSimpleSms = new Dictionary<EncodingEnum, Int32>()
-	{
-		{EncodingEnum.GSM_7BIT, 160},
-		{EncodingEnum.GSM_7BIT_EX3, 160},
-		{EncodingEnum.UNICODE, 70},
-	};
-	/// <summary>
-	/// Multi message length by charset
-	/// </summary>
-	private static Dictionary<EncodingEnum, Int32> MaxCharsInMultiSms = new Dictionary<EncodingEnum, Int32>()
-	{
-		{EncodingEnum.GSM_7BIT, 153},
-		{EncodingEnum.GSM_7BIT_EX3, 153},
-		{EncodingEnum.UNICODE, 67},
-	};
+    /// <summary>
+    /// Message length by charset
+    /// </summary>
+    private static readonly Dictionary<EncodingEnum, int> MaxcharsInSimpleSms = new()
+            {
+                {EncodingEnum.GSM_7BIT, 160},
+                {EncodingEnum.GSM_7BIT_EX3, 160},
+                {EncodingEnum.UNICODE, 70},
+            };
+    /// <summary>
+    /// Multi message length by charset
+    /// </summary>
+    private static readonly Dictionary<EncodingEnum, int> MaxcharsInMultiSms = new()
+            {
+                {EncodingEnum.GSM_7BIT, 153},
+                {EncodingEnum.GSM_7BIT_EX3, 153},
+                {EncodingEnum.UNICODE, 67},
+            };
 
-	#endregion
+    #endregion
 
-	#region Accessors
+    #region Accessors
 
-	/// <summary>
-	/// Encoding used
-	/// </summary>
-	public EncodingEnum Encoding { get; private set; } = EncodingEnum.GSM_7BIT;
-	/// <summary>
-	/// Number of chars
-	/// </summary>
-	public Int32 Length { get; private set; } = 0;
-	/// <summary>
-	/// Number of messages
-	/// </summary>
-	public Int32 Messages { get; private set; } = 1;
-	/// <summary>
-	/// Number of char per message
-	/// </summary>
-	public Int32 PerMessage { get; private set; } = 160;
-	/// <summary>
-	/// Number of char remaining in current message
-	/// </summary>
-	public Int32 Remaining { get; private set; } = 160;
+    /// <summary>
+    /// Encoding used
+    /// </summary>
+    public EncodingEnum Encoding { get; private set; } = EncodingEnum.GSM_7BIT;
+    /// <summary>
+    /// Number of chars
+    /// </summary>
+    public int Length { get; private set; } = 0;
+    /// <summary>
+    /// Number of messages
+    /// </summary>
+    public int Messages { get; private set; } = 1;
+    /// <summary>
+    /// Number of char per message
+    /// </summary>
+    public int PerMessage { get; private set; } = 160;
+    /// <summary>
+    /// Number of char remaining in current message
+    /// </summary>
+    public int Remaining { get; private set; } = 160;
 
-	#endregion
+    #endregion
 
-	#region Constructor
+    #region Constructor
 
-	/// <summary>
-	/// SMS Counter
-	/// </summary>
-	public SmsCounter()
-	{
-	}
+    /// <summary>
+    /// SMS Counter
+    /// </summary>
+    public SmsCounter()
+    {
+    }
 
-	/// <summary>
-	/// SMS Counter
-	/// </summary>
-	/// <param name="text">SMS text</param>
-	public SmsCounter(String text)
-	{
-		this.Count(text);
-	}
+    /// <summary>
+    /// SMS Counter
+    /// </summary>
+    /// <param name="text">SMS text</param>
+    public SmsCounter(string text)
+    {
+        Count(text);
+    }
 
-	#endregion
+    #endregion
 
-	#region Methods
+    #region Methods
 
-	/// <summary>
-	/// Count SMS Message
-	/// </summary>
-	/// <param name="text">SMS text</param>
-	public void Count(String text)
-	{
-		this.Encoding = SmsCounter.GetEncoding(text);
-		this.Length = text.Length;
-		if (this.Encoding == EncodingEnum.GSM_7BIT_EX3)
-		{
-			// Extented chars cost for 2 chars
-			this.Length += SmsCounter.ExtractExtendedGsm7bitChars(text).Count;
-		}
+    /// <summary>
+    /// Count SMS Message
+    /// </summary>
+    /// <param name="text">SMS text</param>
+    private void Count(string text)
+    {
+        Encoding = GetEncoding(text);
+        Length = text.Length;
+        if (Encoding == EncodingEnum.GSM_7BIT_EX3)
+        {
+            // Extented chars cost for 2 chars
+            Length += ExtractExtendedGsm7bitchars(text).Count;
+        }
 
-		if (SmsCounter.MaxCharsInSimpleSms.TryGetValue(this.Encoding, out Int32 iMaxCharsInSimpleSms))
-		{
-			if (this.Length > iMaxCharsInSimpleSms && SmsCounter.MaxCharsInMultiSms.TryGetValue(this.Encoding, out Int32 iMaxCharsInMultiSms))
-			{
-				this.PerMessage = iMaxCharsInMultiSms;
-			}
-			else
-			{
-				this.PerMessage = iMaxCharsInSimpleSms;
-			}
-			this.Messages = (Int32)Math.Ceiling((Decimal)this.Length / this.PerMessage);
-			this.Remaining = (this.PerMessage * this.Messages) - this.Length;
-			if (this.Remaining == 0 && this.Messages == 0)
-			{
-				this.Remaining = this.PerMessage;
-			}
-		}
-	}
+        if (MaxcharsInSimpleSms.TryGetValue(Encoding, out int iMaxcharsInSimpleSms))
+        {
+            if (Length > iMaxcharsInSimpleSms && MaxcharsInMultiSms.TryGetValue(Encoding, out int iMaxcharsInMultiSms))
+            {
+                PerMessage = iMaxcharsInMultiSms;
+            }
+            else
+            {
+                PerMessage = iMaxcharsInSimpleSms;
+            }
+            Messages = (int)Math.Ceiling((decimal)Length / PerMessage);
+            Remaining = (PerMessage * Messages) - Length;
+            if (Remaining == 0 && Messages == 0)
+            {
+                Remaining = PerMessage;
+            }
+        }
+    }
 
-	#endregion
+    #endregion
 
-	#region Functions
 
-	/// <summary>
-	/// Get text encoding
-	/// </summary>
-	/// <param name="text">SMS text</param>
-	/// <returns>Encoding</returns>
-	public static EncodingEnum GetEncoding(String text)
-	{
-		if (new Regex("^[" + GSM_7BIT_CHARSET + "]*$").IsMatch(text))
-		{
-			return EncodingEnum.GSM_7BIT;
-		}
-		else if (new Regex("^[" + GSM_7BIT_CHARSET + GSM_7BIT_EX_CHARSET + "]*$").IsMatch(text))
-		{
-			return EncodingEnum.GSM_7BIT_EX3;
-		}
-		else
-		{
-			return EncodingEnum.UNICODE;
-		}
-	}
 
-	/// <summary>
-	/// Extract Extended GSM 7bit chars
-	/// </summary>
-	/// <param name="text">SMS text</param>
-	/// <returns>List of extented chars</returns>
-	public static List<Char> ExtractExtendedGsm7bitChars(String text)
-	{
-		List<Char> lstReturn = new List<Char>();
-		Regex oRegexGsm7bitExOnly = new Regex("^[\\" + GSM_7BIT_EX_CHARSET + "]*$");
-		foreach (Char cTest in text)
-		{
-			if (oRegexGsm7bitExOnly.IsMatch(cTest.ToString()))
-			{
-				lstReturn.Add(cTest);
-			}
-		}
-		return lstReturn;
-	}
+    #region Functions
 
-	/// <summary>
-	/// Extract non GSM chars
-	/// </summary>
-	/// <param name="text">SMS text</param>
-	/// <returns>List of non Gsm chars</returns>
-	public static List<Char> ExtractNonGsmCharacters(String text)
-	{
-		List<Char> lstReturn = new List<Char>();
-		Regex oRegexGsm7bitExOnly = new Regex("^[" + GSM_7BIT_CHARSET + GSM_7BIT_EX_CHARSET + "]*$");
-		foreach (Char cTest in text)
-		{
-			if (!oRegexGsm7bitExOnly.IsMatch(cTest.ToString()))
-			{
-				lstReturn.Add(cTest);
-			}
-		}
-		return lstReturn;
-	}
-	
-	#endregion
+    /// <summary>
+    /// Get text encoding
+    /// </summary>
+    /// <param name="text">SMS text</param>
+    /// <returns>Encoding</returns>
+    public static EncodingEnum GetEncoding(string text)
+    {
+        if (new Regex("^[" + GSM_7BIT_charSET + "]*$").IsMatch(text))
+        {
+            return EncodingEnum.GSM_7BIT;
+        }
+        else if (new Regex("^[" + GSM_7BIT_charSET + GSM_7BIT_EX_charSET + "]*$").IsMatch(text))
+        {
+            return EncodingEnum.GSM_7BIT_EX3;
+        }
+        else
+        {
+            return EncodingEnum.UNICODE;
+        }
+    }
+
+    /// <summary>
+    /// Extract Extended GSM 7bit chars
+    /// </summary>
+    /// <param name="text">SMS text</param>
+    /// <returns>List of extented chars</returns>
+    public static List<char> ExtractExtendedGsm7bitchars(string text)
+    {
+        List<char> lstReturn = new List<char>();
+        Regex oRegexGsm7bitExOnly = new Regex("^[\\" + GSM_7BIT_EX_charSET + "]*$");
+        foreach (char cTest in text)
+        {
+            if (oRegexGsm7bitExOnly.IsMatch(cTest.ToString()))
+            {
+                lstReturn.Add(cTest);
+            }
+        }
+        return lstReturn;
+    }
+
+    /// <summary>
+    /// Extract non GSM chars
+    /// </summary>
+    /// <param name="text">SMS text</param>
+    /// <returns>List of non Gsm chars</returns>
+    public static List<char> ExtractNonGsmcharacters(string text)
+    {
+        List<char> lstReturn = new List<char>();
+        Regex oRegexGsm7bitExOnly = new Regex("^[" + GSM_7BIT_charSET + GSM_7BIT_EX_charSET + "]*$");
+        foreach (char cTest in text)
+        {
+            if (!oRegexGsm7bitExOnly.IsMatch(cTest.ToString()))
+            {
+                lstReturn.Add(cTest);
+            }
+        }
+        return lstReturn;
+    }
+
+
+    #endregion
 }
