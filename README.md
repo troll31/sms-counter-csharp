@@ -7,18 +7,24 @@ Original inspiration : [danxexe/sms-counter](https://github.com/danxexe/sms-coun
 ## Usage
 
 ```csharp
-var oInfos = new SmsCounter("content of the SMS");
+var smsCounterInfo = new SmsCounter("content of the SMS");
 ```
 
-You will have access to the following informations :
+You will have access to the following informations:
 
 ```csharp
-oInfos.Messages 	// Number of messages (Int32) = 1
-oInfos.Length   	// Total length of messages (Int32) = 18
-oInfos.Remaining 	// Remaining chars in the message (Int32) = 142
-oInfos.PerMessage 	// Max chars in 1 message (Int32) = 160
-oInfos.Encoding 	// Encoding used by messages (EncodingEnum) = GSM_7BIT
+smsCounterInfo.Messages 	// Number of messages (int) = 1
+smsCounterInfo.Length   	// Total length of messages (int) = 18
+smsCounterInfo.Remaining 	// Remaining chars in the message (int) = 142
+smsCounterInfo.PerMessage 	// Max chars in 1 message (int) = 160
+smsCounterInfo.Encoding 	// Encoding used by messages (EncodingEnum) = GSM_7BIT
 ```
+
+You can also check test results: 
+![test results](/test-case-results.png "Test results").
+
+Just need XUnit testing library for adding to tests file your project
+
 
 ## ToDo
 
